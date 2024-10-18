@@ -1,0 +1,71 @@
+# ソフトウェアへの組み込み言語
+
+前提: C++へ組み込んで使用するインタープリタ言語
+現状: luajit
+ほしいもの: 資料が多い、処理系が小さい、高速で動作する、他言語に組み込みやすい、一般的な文法の、静的型付けな、インタープリタ言語。(ない)
+
+
+## メモ
+
+現状luajit一択と言わざるを得ない。
+しかし、luaには問題が多い。割と致命的。 -> [luaの批評](#luaの批評)
+lua以外の選択肢は採用が難しい。 -> [lua以外の選択肢](#lua以外の選択肢)
+
+## luaの批評
+- 利点
+	- 組み込みが簡単。
+		- 他の言語は組み込みがかなり煩雑。
+			- Luaとmruby以外は選択肢にならないレベル。その他のメジャーな言語はほぼ組み込みが大変。
+	        - mrubyの場合、ほぼ情報がないと思って間違いない。可能ではある。
+	            - mrubyはソフトウェアへの組み込みではなく組み込みソフトウェアを主目的としている。
+	            - mrubyは比較的新しいため資料が少ない。加えて、組み込みソフトウェアとソフトウェアへの組み込みで、同じ「組み込み」「embed」という単語を使うため検索が難しい。
+	            - https://qiita.com/drednote/items/5bbd13f150e37a771ac7
+	            - https://github.com/carsonmcdonald/mruby-c-example
+	            - https://github.com/kotaweav/tutorials/tree/master/mruby_cmake_integration
+		- luaはlib/dll一つあれば組み込める。  
+	        - luaはソフトウェアへの組み込みを主目的としている。簡単に使用できるようになっている。
+	- 小さい。
+		- 多機能ではないので処理系が小さい。
+		- ほかの言語の処理系は100MB以上必要。mrubyのみ比較対象になる。mrubyも数MB程度になるが、使用する標準ライブラリ毎に処理系をコンパイルする仕様の為使いにくい。
+		- Luaは数MB程度。小さくすることもできる。
+	- 速い。
+		- JITコンパイラによって高速に動作する。
+		- C/C++より速い場合もある。  
+		https://scrapbox.io/eeeeeeeeeeeeeeee/%E4%B8%8B%E6%89%8B%E3%81%AAdll%E3%82%88%E3%82%8A%E3%82%82luajit%E3%81%AE%E6%96%B9%E3%81%8C%E9%80%9F%E3%81%84%E3%81%A8%E3%81%84%E3%81%86%E8%A9%B1  
+- 欠点
+	- 書式が独特。癖強い。
+	    - 配列のindexは **1** スタート。
+			- これはかなり問題になる。
+	        - そもそも配列はない。全てテーブル(なんでも入るmap)。
+	            - ただし`nil`が入らない。
+	    - コメントの書式は`--`、`--[[`,`--]]`
+	- 多機能ではない。
+	    - これはそれほど問題にならない。
+	- luajitの開発が不透明。
+		- この用途では実質lua = luajitになる。
+
+## lua以外の選択肢
+
+結論から言えば、現状ない。
+
+luaはかなり使われてきた歴史があるため資料が多い。  
+luaの不満も多く、同様の目的の新規言語はそこそこあるものの、使用者が少なく、資料が少ない。  
+新規言語は採用が難しい。  
+mrubyの方がまだ資料が多い。  
+
+lua,mruby以外だと、2パターンのアプローチがある。
+- 新規言語([AngelScript](https://angelcode.com/angelscript/sdk/docs/manual/index.html)(githubなし), [Squirrel](https://github.com/albertodemichelis/squirrel)(☆912))
+    - 採用が難しいものしかない。
+        - 資料が少ない。多少使われているものもある。
+        - AngelScriptはgithubにない。そこそこ採用されているみたいだが個人開発？。いつまでメンテされるのか不明。
+        - Squirrelは最新リリースが2022年。
+- トランスコンパイルするもの([MoonScript](https://github.com/leafo/moonscript)(☆3.2k), [Terra](https://github.com/terralang/terra)(☆2.7k) )
+    - ソフトウェアへの組み込みが主目的ではない。
+        - 速度の文脈ではトランスコンパイルの時間を無視する場合が多い。
+        - 要は用途が違う。
+    - メジャーな言語を変換して実行するもの。
+        - luaにコンパイルするもの
+        - それ以外の言語にコンパイルするもの
+
+https://www.reddit.com/r/cpp/comments/dcs52f/embeddable_languages_for_c/
+
